@@ -11,7 +11,7 @@ export interface KittyTab {id:number;layout:string;windows:KittyWindow[];}
 export interface KittyTransport {run(args:string[]):Promise<string>;}
 export class KittyClient implements KittyTransport {
   constructor(private readonly endpoint:string,private readonly executable='kitty') {
-    if(!endpoint.startsWith('unix:/'))throw new Error('Kitty requires an explicit local Unix socket.');
+    if(!endpoint.startsWith('unix:/')&&!endpoint.startsWith('tcp:'))throw new Error('Kitty requires an explicit local Unix socket or loopback TCP endpoint.');
   }
   async run(args:string[]):Promise<string> {
     try {return (await promisify(execFile)(this.executable,['@','--to',this.endpoint,'--use-password','never',...args],{timeout:5000,maxBuffer:2_000_000})).stdout.trim();}
