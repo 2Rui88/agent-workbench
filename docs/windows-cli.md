@@ -61,7 +61,7 @@ node apps/cli/dist/main.js stop
 Each service gets a separate log under `dataDir`. The CLI records PIDs and only stops
 the processes it recorded, using `taskkill /T /F` on Windows.
 
-`doctor` checks the host prerequisites and the migrated package sources. Kitty mode requires the `kitty` executable; on Windows the launcher uses a loopback TCP remote-control endpoint and a PowerShell wrapper, while Unix keeps the existing Unix socket launcher. Windows Terminal (`wt.exe`) is optional for the core services and Coordinator Named Pipe runtime:
+`doctor` checks the host prerequisites and the migrated package sources. Unix Kitty mode requires the `kitty` executable. On Windows, `kitty:start` keeps the same mode entry point and automatically routes to the native Windows Terminal observer backend when Kitty is unavailable; set `AGENT_WORKBENCH_KITTY_STRICT=1` to require Kitty explicitly. Windows Terminal (`wt.exe`) is optional for the core services and Coordinator Named Pipe runtime:
 
 ```powershell
 node apps/cli/dist/main.js doctor

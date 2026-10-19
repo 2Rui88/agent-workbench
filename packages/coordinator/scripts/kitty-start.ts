@@ -12,7 +12,19 @@ const [configPath,mode]=process.argv.slice(2);
 if(!configPath||mode!=='--observe-only')throw new Error('Usage: kitty:start <runtime.json> --observe-only  (start the lead as a plain claude session; the skill attaches it)');
 await loadRuntimeConfig(configPath);
 try { execFileSync(process.platform === 'win32' ? 'where.exe' : 'which', ['kitty'], {stdio:'ignore'}); }
-catch { throw new Error('Kitty executable not found. The official Kitty terminal release currently has no native Windows asset; install Kitty inside a Linux/WSL environment or use a supported Windows terminal backend.'); }
+catch {
+  if (process.platform === 'win32' && process.env.AGENT_WORKBENCH_KITTY_STRICT !== '1') {
+    const fallback = fileURLToPath(new URL('./windows-terminal-start.js', import.meta.url));
+    const child = spawn(process.execPath, [fallback, resolve(configPath)], { stdio: 'inherit', windowsHide: true });
+    const code = await new Promise<number | null>((resolvePromise, reject) => {
+      child.once('error', reject);
+      child.once('exit', (exitCode) => resolvePromise(exitCode));
+    });
+    process.exitCode = code ?? 1;
+    process.exit();
+  }
+  throw new Error('Kitty executable not found. On Windows, kitty:start falls back to the native Windows Terminal observer backend; set AGENT_WORKBENCH_KITTY_STRICT=1 to require Kitty explicitly.');
+}
 const root=fileURLToPath(new URL('../..',import.meta.url));
 await mkdir(join(root,'.state/kitty'),{recursive:true,mode:0o700});
 const dir=await mkdtemp(join(root,'.state/kitty/run-'));
