@@ -105,6 +105,20 @@ async function initCoordinator(): Promise<void> {
   console.log("Next: run human-control init for the separate human approval credential, then enable coordinator in the workbench config.");
 }
 
+async function enableCoordinator(): Promise<void> {
+  const path = arg("--config") ?? configPath;
+  const config = await readConfig();
+  const runtimePath = resolve(config.coordinatorRuntimePath ?? join(resolve(config.dataDir), "coordinator", "runtime.json"));
+  const runtime = JSON.parse(await readFile(runtimePath, "utf8")) as { humanCredentialFile?: string };
+  if (!runtime.humanCredentialFile) throw new Error("Coordinator runtime has no humanCredentialFile.");
+  await access(resolve(dirname(runtimePath), runtime.humanCredentialFile));
+  const coordinator = config.services?.find((service) => service.name === "coordinator");
+  if (!coordinator) throw new Error("Coordinator service is missing from the workbench config.");
+  coordinator.enabled = true;
+  await writeFile(path, `${JSON.stringify(config, null, 2)}\n`, "utf8");
+  console.log(`Enabled coordinator in ${path}`);
+}
+
 async function start(): Promise<void> {
   const config = await readConfig();
   const selected = arg('--service');
@@ -173,11 +187,12 @@ const command = process.argv[2] ?? 'help';
 try {
   if (command === 'init') await init();
   else if (command === 'init-coordinator') await initCoordinator();
+  else if (command === 'enable-coordinator') await enableCoordinator();
   else if (command === 'start') await start();
   else if (command === 'stop') await stop();
   else if (command === 'status') await status();
   else if (command === 'doctor') await doctor();
-  else console.log('Usage: agent-platform <init|init-coordinator|start|stop|status|doctor> [--config path]');
+  else console.log('Usage: agent-platform <init|init-coordinator|enable-coordinator|start|stop|status|doctor> [--config path]');
 } catch (error) {
   console.error(error instanceof Error ? error.message : String(error));
   process.exitCode = 1;
