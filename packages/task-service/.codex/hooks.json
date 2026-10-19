@@ -1,0 +1,19 @@
+{
+  "description": "Inject the cli-session-task-mcp development pipeline at session start.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/.codex/hooks/session-start.mjs\"",
+            "timeout": 5,
+            "statusMessage": "Loading development pipeline context",
+            "additionalContextLimit": 6000
+          }
+        ]
+      }
+    ]
+  }
+}

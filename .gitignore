@@ -1,0 +1,13 @@
+node_modules/
+dist/
+coverage/
+.state/
+.cache/
+.env
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.log
+*.tmp
+.DS_Store
+.worktrees/

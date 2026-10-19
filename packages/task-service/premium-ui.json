@@ -1,0 +1,6 @@
+{
+  "sourceRoots": ["src/web"],
+  "ownership": {
+    "Select/Listbox": "authored"
+  }
+}

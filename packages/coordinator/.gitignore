@@ -1,0 +1,9 @@
+node_modules/
+dist/
+coverage/
+.state/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+.codebase-memory/

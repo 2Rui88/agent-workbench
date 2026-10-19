@@ -1,0 +1,10 @@
+{
+  "groupId": "local-development",
+  "mode": "mock",
+  "databasePath": "../.state/state.sqlite",
+  "socketPath": "../.state/coordinator.sock",
+  "credentialFile": "../.state/roles.json",
+  "humanCredentialFile": "../.state/human.json",
+  "allowedRoots": [".."],
+  "repositories": []
+}

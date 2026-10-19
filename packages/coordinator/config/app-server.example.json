@@ -1,0 +1,27 @@
+{
+  "groupId": "local-development",
+  "mode": "app_server",
+  "leadMode": "external",
+  "leadAgent": "claude",
+  "databasePath": "../.state/state.sqlite",
+  "socketPath": "../.state/coordinator.sock",
+  "credentialFile": "../.state/roles.json",
+  "humanCredentialFile": "../.state/human.json",
+  "allowedRoots": [
+    ".."
+  ],
+  "repositories": [
+    {
+      "repositoryId": "codex-session-coordinator",
+      "worktreePath": ".."
+    }
+  ],
+  "taskMcpUrl": "http://172.16.0.90:47321/mcp",
+  "taskHostEvidence": {
+    "cliRepositoryPath": "../../cli-session-task-mcp",
+    "serverUrl": "http://172.16.0.90:47321"
+  },
+  "projectMemory": {
+    "path": "../docs/project-memory.md"
+  }
+}

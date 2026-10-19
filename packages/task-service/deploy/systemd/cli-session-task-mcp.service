@@ -1,0 +1,26 @@
+[Unit]
+Description=CLI Session Task MCP Server
+After=network.target
+
+[Service]
+Type=simple
+User=deploy
+Group=deploy
+WorkingDirectory=/opt/cli-session-task-mcp
+ExecStart=/usr/bin/env node dist/server/main.js
+Restart=always
+RestartSec=10
+Environment=NODE_ENV=production
+Environment=TASK_MCP_HOST=0.0.0.0
+Environment=TASK_MCP_DATA_DIR=/opt/cli-session-task-mcp/data
+Environment=TASK_MCP_ALLOWED_HOSTS=127.0.0.1:47321,localhost:47321
+EnvironmentFile=-/etc/default/cli-session-task-mcp
+
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/cli-session-task-mcp/data
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

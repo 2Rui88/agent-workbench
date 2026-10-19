@@ -1,0 +1,21 @@
+flowchart TD
+  Start["Codex session starts or resumes"] --> Hook["Project SessionStart hook injects Git identity and workflow order"]
+  Hook --> Graph["Codebase Memory maps code topology and impact"]
+  Hook --> Task["CLI Task binds session and restores task state"]
+  Hook --> Memory["PowerContext recalls durable project knowledge"]
+  Graph --> Work["Agent implements and verifies"]
+  Task --> Work
+  Memory --> Work
+  Work --> Checkpoint["CLI Task semantic checkpoint"]
+  Checkpoint --> Submit["task_submit with fresh evidence"]
+  Submit --> Request["Server creates downstream validation cycle"]
+  Request --> Downstream["Active agent or dispatcher wakes downstream validator"]
+  Downstream --> Result{"Latest validation result"}
+  Result -->|passed| Gate["pending_acceptance human gate"]
+  Result -->|rejected| Repair["Server creates upstream repair request"]
+  Result -->|error| Downstream
+  Repair --> Upstream["Active agent or dispatcher wakes upstream owner"]
+  Upstream --> Claim["dependency_repair_receive resumes task with lease"]
+  Claim --> Work
+  Gate -->|accept| Done["done"]
+  Gate -->|reject| Work

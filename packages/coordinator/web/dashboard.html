@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark"><title>协同观察台</title>
+  <link rel="stylesheet" href="/dashboard.css"><script src="/dashboard.js" type="module"></script>
+</head>
+<body>
+  <a class="skip" href="#main">跳到主要内容</a>
+  <main id="main" class="shell">
+    <header><div><p class="eyebrow">COORDINATOR / OBSERVE</p><h1>协同观察台</h1><p id="group-line">正在读取项目…</p></div><div class="lead"><span>主会话</span><strong id="lead-mode">未知</strong><span id="lead-session">会话未知</span><span id="lead-expiry"></span></div></header>
+    <section class="refresh" aria-label="快照状态"><p id="refresh-status" role="status" aria-live="polite">正在加载首次快照…</p><button id="retry" type="button">立即重试</button></section>
+    <section class="summary" aria-label="项目摘要"><article>派发 <strong id="total-dispatches">—</strong></article><article>契约 <strong id="total-contracts">—</strong></article><article>审计 <strong id="total-audits">—</strong></article><article>调用观察 <strong id="budget-summary">未知</strong><span id="budget-detail">Token / 费用未知</span></article></section>
+    <div class="layout"><section class="panel queue-panel" aria-labelledby="queue-title"><div class="heading"><h2 id="queue-title">任务队列</h2><p id="queue-count">等待快照</p></div><div class="table-wrap" tabindex="0" role="region" aria-label="可横向滚动的任务队列"><table><caption class="sr-only">派发任务及模型回执</caption><thead><tr><th scope="col">角色</th><th scope="col">工作项</th><th scope="col">状态</th><th scope="col">模型</th><th scope="col">开始时间</th><th scope="col">耗时</th><th scope="col">Turn</th></tr></thead><tbody id="queue-rows"></tbody></table></div><p id="queue-empty" hidden>当前快照没有派发记录。</p></section><aside><section class="panel" aria-labelledby="roles-title"><div class="heading"><h2 id="roles-title">协同会话</h2><p id="scope-summary"></p></div><div id="role-grid" class="roles"></div></section><div class="details"><section class="panel" aria-labelledby="contracts-title"><h2 id="contracts-title">契约</h2><p id="contracts-count"></p><ul id="contract-list"></ul><p id="contracts-empty" hidden>当前快照没有契约记录。</p></section><section class="panel" aria-labelledby="audits-title"><h2 id="audits-title">审计与返修</h2><p id="audits-count"></p><ul id="audit-list"></ul><p id="audits-empty" hidden>当前快照没有审计记录。</p></section></div></aside></div>
+    <footer><span>只读观察 · 最终验收由用户完成</span><span id="captured-at">快照时间未知</span></footer>
+  </main>
+</body>
+</html>

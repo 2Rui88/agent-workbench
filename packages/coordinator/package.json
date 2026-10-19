@@ -1,0 +1,48 @@
+{
+  "name": "codex-session-coordinator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "tsx --test tests/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc",
+    "protocol-preflight": "tsx scripts/protocol-preflight.ts",
+    "group-init": "tsx scripts/group-init.ts",
+    "mcp": "node dist/scripts/mcp-server.js",
+    "watch": "node dist/scripts/watch.js",
+    "daemon": "tsx scripts/daemon.ts",
+    "human-control": "tsx scripts/human-control.ts",
+    "project-preflight": "tsx scripts/project-preflight.ts",
+    "client": "tsx scripts/client.ts",
+    "dashboard": "tsx scripts/dashboard.ts",
+    "herdr:follow": "node dist/scripts/herdr-follow.js",
+    "worker-preflight": "tsx scripts/worker-preflight.ts",
+    "kitty:start": "node dist/scripts/kitty-start.js",
+    "kitty:follow": "node dist/scripts/kitty-follow.js",
+    "kitty:compact": "node dist/scripts/kitty-follow.js",
+    "group-add-role": "tsx scripts/group-add-role.ts",
+    "herdr:compact": "node dist/scripts/herdr-compact.js",
+    "herdr:open": "tsx scripts/herdr-open.ts",
+    "herdr:close": "tsx scripts/herdr-close.ts",
+    "worker-task": "tsx scripts/worker-task.ts",
+    "project:init": "tsx scripts/project-init.ts",
+    "group:stop": "tsx scripts/group-stop.ts",
+    "lead:attach": "tsx scripts/lead-attach.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "0.3.293",
+    "@modelcontextprotocol/client": "2.3.0",
+    "@modelcontextprotocol/server": "2.3.0",
+    "playwright-core": "1.63.0",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.4",
+    "tsx": "4.23.15",
+    "typescript": "6.0.3"
+  }
+}

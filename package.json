@@ -1,0 +1,21 @@
+{
+  "name": "agent-workbench",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24.19.0" },
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "build": "npm run build:runtime && npm run build:task && npm run build:coordinator",
+    "build:runtime": "npm --workspace packages/windows-runtime run build",
+    "build:task": "npm --workspace packages/task-service run build",
+    "build:coordinator": "npm --workspace packages/coordinator run build",
+    "check:runtime": "npm --workspace packages/windows-runtime run check",
+    "check:task": "npm --workspace packages/task-service run check",
+    "check:coordinator": "npm --workspace packages/coordinator run typecheck",
+    "check": "npm run check:runtime && npm run check:task && npm run check:coordinator",
+    "start": "node apps/gateway/dist/main.js",
+    "status": "node apps/cli/dist/main.js status",
+    "doctor": "node apps/cli/dist/main.js doctor"
+  }
+}

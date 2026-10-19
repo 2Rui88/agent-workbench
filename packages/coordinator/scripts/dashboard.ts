@@ -1,0 +1,12 @@
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { startDashboard } from '../src/dashboard/http-server.js';
+const args = process.argv.slice(2);
+const value = (key: string, fallback?: string) => { const i = args.indexOf(key); return i >= 0 ? args[i + 1] : fallback; };
+const database = value('--database'); const groupId = value('--group'); const port = Number(value('--port', '25426'));
+if (!database || !groupId || !/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$/.test(groupId) || !Number.isInteger(port) || port < 0 || port > 65535) throw new Error('Usage: dashboard --database PATH --group ID [--port PORT] [--web-root PATH]');
+const service = await startDashboard({ databasePath: resolve(database), groupId, port, webRoot: resolve(value('--web-root', fileURLToPath(new URL('../web', import.meta.url)))!) });
+console.log(JSON.stringify({ status: 'ready', url: service.url, readOnly: true }));
+let stopping = false;
+const stop = async () => { if (stopping) return; stopping = true; await service.close(); };
+process.once('SIGINT', () => { void stop(); }); process.once('SIGTERM', () => { void stop(); });

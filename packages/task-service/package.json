@@ -1,0 +1,49 @@
+{
+  "name": "cli-session-task-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.19.0"
+  },
+  "scripts": {
+    "dev:server": "tsx watch src/server/main.ts",
+    "dev:web": "vite",
+    "build:server": "tsc -p tsconfig.server.json",
+    "build:web": "vite build",
+    "build": "npm run build:server && npm run build:web",
+    "start": "node dist/server/main.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "check": "npm run typecheck && npm test && npm run build",
+    "repo:register": "tsx src/cli/register-repository.ts",
+    "host-key": "tsx src/cli/host-key.ts",
+    "evidence": "tsx src/cli/evidence.ts",
+    "data:export": "tsx src/cli/export-data.ts",
+    "seed:e2e": "tsx tests/e2e/seed-e2e.ts",
+    "test:e2e:edge": "browser-harness < tests/e2e/board-smoke.py"
+  },
+  "dependencies": {
+    "@base-ui/react": "1.4.1",
+    "@leke/components": "^1.1.0",
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "express": "5.2.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@types/express": "5.0.6",
+    "@types/node": "24.13.6",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4",
+    "@types/supertest": "7.2.1",
+    "@vitejs/plugin-react": "6.0.5",
+    "supertest": "7.2.2",
+    "tsx": "4.23.12",
+    "typescript": "7.0.2",
+    "vite": "8.2.1",
+    "vitest": "4.1.10"
+  }
+}
