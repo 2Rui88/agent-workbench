@@ -61,7 +61,7 @@ node apps/cli/dist/main.js stop
 Each service gets a separate log under `dataDir`. The CLI records PIDs and only stops
 the processes it recorded, using `taskkill /T /F` on Windows.
 
-`doctor` checks the host prerequisites and the migrated package sources:
+`doctor` checks the host prerequisites and the migrated package sources. Kitty mode requires the `kitty` executable; Windows Terminal (`wt.exe`) is optional for the core services and Coordinator Named Pipe runtime:
 
 ```powershell
 node apps/cli/dist/main.js doctor
