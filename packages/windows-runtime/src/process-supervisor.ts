@@ -5,6 +5,7 @@ export interface ManagedProcess {
   readonly id: string;
   readonly pid: number;
   readonly child: ChildProcess;
+  readonly ready: Promise<void>;
 }
 
 export interface SpawnSpec {
@@ -35,15 +36,17 @@ export class WindowsProcessSupervisor {
       shell: false
     });
     if (!child.pid) throw new Error(`Process did not expose a PID: ${spec.id}`);
-    const managed: ManagedProcess = { id: spec.id, pid: child.pid, child };
-    this.processes.set(spec.id, managed);
+    let ready = Promise.resolve();
     if (spec.useJobObject && process.platform === 'win32') {
       this.jobHost ??= new JobObjectHost();
-      void this.jobHost.assign(spec.id, child.pid).catch((error) => {
+      ready = this.jobHost.assign(spec.id, child.pid).catch((error) => {
         void this.stop(spec.id);
         child.emit('error', error);
+        throw error;
       });
     }
+    const managed: ManagedProcess = { id: spec.id, pid: child.pid, child, ready };
+    this.processes.set(spec.id, managed);
     const forget = () => { if (this.processes.get(spec.id)?.pid === child.pid) this.processes.delete(spec.id); };
     child.once('exit', forget);
     child.once('error', forget);
