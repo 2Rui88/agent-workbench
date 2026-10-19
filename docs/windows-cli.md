@@ -23,7 +23,11 @@ human approval credential interactively before enabling the Coordinator service:
 node packages/coordinator/dist/scripts/human-control.js <runtime.json> init
 ```
 
-The command prompts for an explicit `yes`; the human credential is never printed.
+The command prompts for an explicit `yes`; the human credential is never printed. After it succeeds, enable the service without editing JSON manually:
+
+```powershell
+node apps/cli/dist/main.js enable-coordinator
+```
 
 The generated configuration contains two service entries:
 
