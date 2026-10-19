@@ -1,7 +1,7 @@
 import {mkdtemp,mkdir} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {join,resolve} from 'node:path';
-import {spawn} from 'node:child_process';
+import {spawn,execFileSync} from 'node:child_process';
 import {createServer} from 'node:net';
 import {writeFile} from 'node:fs/promises';
 import {loadRuntimeConfig} from '../src/runtime-config.js';
@@ -11,6 +11,8 @@ const [configPath,mode]=process.argv.slice(2);
 // Lead sessions attach themselves from a plain claude (lead:attach); this entry only opens an observation Kitty.
 if(!configPath||mode!=='--observe-only')throw new Error('Usage: kitty:start <runtime.json> --observe-only  (start the lead as a plain claude session; the skill attaches it)');
 await loadRuntimeConfig(configPath);
+try { execFileSync(process.platform === 'win32' ? 'where.exe' : 'which', ['kitty'], {stdio:'ignore'}); }
+catch { throw new Error('Kitty executable not found. The official Kitty terminal release currently has no native Windows asset; install Kitty inside a Linux/WSL environment or use a supported Windows terminal backend.'); }
 const root=fileURLToPath(new URL('../..',import.meta.url));
 await mkdir(join(root,'.state/kitty'),{recursive:true,mode:0o700});
 const dir=await mkdtemp(join(root,'.state/kitty/run-'));
