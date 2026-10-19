@@ -58,7 +58,9 @@ export async function loadRuntimeConfig(path: string): Promise<RuntimeConfig> {
 }
 export async function assertPrivateFile(path: string): Promise<void> {
   const file = await stat(path);
-  if (!file.isFile() || file.uid !== process.getuid?.() || (file.mode & 0o077) !== 0) throw new CoordinatorError('FORBIDDEN', 'Credential file must be private and owned by this user.', 'Set a protected owner-only credential file.');
+  if (!file.isFile()) throw new CoordinatorError('FORBIDDEN', 'Credential path must be a regular file.', 'Create a private credential file.');
+  if (process.platform === 'win32') return;
+  if (file.uid !== process.getuid?.() || (file.mode & 0o077) !== 0) throw new CoordinatorError('FORBIDDEN', 'Credential file must be private and owned by this user.', 'Set a protected owner-only credential file.');
 }
 export async function readProtectedJson(path: string): Promise<unknown> {
   await assertPrivateFile(path);
