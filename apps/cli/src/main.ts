@@ -73,6 +73,38 @@ async function init(): Promise<void> {
   console.log('Complete coordinator runtime initialization, set its enabled flag to true, then run: agent-platform start --service coordinator');
 }
 
+async function initCoordinator(): Promise<void> {
+  const config = await readConfig();
+  const runtimePath = resolve(config.coordinatorRuntimePath ?? join(resolve(config.dataDir), "coordinator", "runtime.json"));
+  await mkdir(dirname(runtimePath), { recursive: true });
+  try {
+    await access(runtimePath, constants.F_OK);
+    throw new Error(`Coordinator runtime already exists: ${runtimePath}`);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+  }
+  const runtimeDirectory = dirname(runtimePath);
+  const runtime = {
+    groupId: config.projectId,
+    mode: "mock",
+    databasePath: join(runtimeDirectory, "state.sqlite"),
+    // The coordinator maps this portable path to a Windows Named Pipe.
+    socketPath: join(runtimeDirectory, "coordinator.sock"),
+    credentialFile: join(runtimeDirectory, "roles.json"),
+    humanCredentialFile: join(runtimeDirectory, "human.json"),
+    allowedRoots: [root],
+    repositories: []
+  };
+  await writeFile(runtimePath, `${JSON.stringify(runtime, null, 2)}\n`, { encoding: "utf8", flag: "wx" });
+  execFileSync(process.execPath, [resolve(root, "packages/coordinator/dist/scripts/group-init.js"), runtimePath], {
+    cwd: resolve(root, "packages/coordinator"),
+    env: { ...process.env, COORDINATOR_ROLE: "lead", COORDINATOR_GROUP_ID: config.projectId },
+    stdio: "inherit"
+  });
+  console.log(`Created Coordinator runtime: ${runtimePath}`);
+  console.log("Next: run human-control init for the separate human approval credential, then enable coordinator in the workbench config.");
+}
+
 async function start(): Promise<void> {
   const config = await readConfig();
   const selected = arg('--service');
@@ -140,11 +172,12 @@ async function doctor(): Promise<void> {
 const command = process.argv[2] ?? 'help';
 try {
   if (command === 'init') await init();
+  else if (command === 'init-coordinator') await initCoordinator();
   else if (command === 'start') await start();
   else if (command === 'stop') await stop();
   else if (command === 'status') await status();
   else if (command === 'doctor') await doctor();
-  else console.log('Usage: agent-platform <init|start|stop|status|doctor> [--config path]');
+  else console.log('Usage: agent-platform <init|init-coordinator|start|stop|status|doctor> [--config path]');
 } catch (error) {
   console.error(error instanceof Error ? error.message : String(error));
   process.exitCode = 1;
