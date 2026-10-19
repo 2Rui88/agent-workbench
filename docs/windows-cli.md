@@ -70,3 +70,13 @@ node apps/cli/dist/main.js doctor
 The coordinator uses a Windows Named Pipe internally even when the runtime config keeps
 the portable `socketPath` field. Task MCP continues to use its HTTP `/mcp` endpoint for
 Codex and Claude compatibility.
+
+## Windows Terminal observer backend
+
+Windows uses a native `wt.exe` observer backend instead of the Unix Kitty launcher. After the Coordinator runtime is initialized, start the five observer tabs with:
+
+```powershell
+npm --prefix packages/coordinator run windows-terminal:start -- <runtime.json>
+```
+
+The backend opens one overview tab and four role tabs. Each tab runs the existing bounded observer renderer. It requires Windows Terminal to be installed and available as `wt.exe`; it does not require Linux, WSL, Kitty, or a Unix socket.
