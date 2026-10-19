@@ -40,6 +40,11 @@ function commandExists(command: string): boolean {
   catch { return false; }
 }
 
+function supportsRequiredNode(): boolean {
+  const [major, minor] = process.versions.node.split('.').map(Number);
+  return (major ?? 0) > 24 || ((major ?? 0) === 24 && (minor ?? 0) >= 19);
+}
+
 async function init(): Promise<void> {
   const path = arg('--config') ?? configPath;
   await mkdir(dirname(path), { recursive: true });
@@ -104,7 +109,7 @@ async function status(): Promise<void> {
 async function doctor(): Promise<void> {
   const checks = [
     { name: 'platform', ok: process.platform === 'win32', detail: process.platform },
-    { name: 'node', ok: Number(process.versions.node.split('.')[0]) >= 24, detail: process.version },
+    { name: 'node', ok: supportsRequiredNode(), detail: `${process.version} (requires >=24.19.0)` },
     { name: 'git', ok: commandExists('git'), detail: 'required for worktree validation' },
     { name: 'powershell', ok: process.platform !== 'win32' || commandExists('powershell'), detail: 'required for Windows Runtime' },
     { name: 'windows-terminal', ok: process.platform !== 'win32' || commandExists('wt'), detail: 'required for Kitty mode' },
