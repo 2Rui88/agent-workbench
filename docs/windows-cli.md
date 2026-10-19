@@ -9,6 +9,22 @@ Coordinator authorization.
 node apps/cli/dist/main.js init
 ```
 
+To initialize the Coordinator runtime on Windows after the workbench config exists:
+
+```powershell
+node apps/cli/dist/main.js init-coordinator
+```
+
+This creates the runtime JSON, role credentials, SQLite state, and a portable socket
+path that is converted to a Windows Named Pipe by the Coordinator. Create the separate
+human approval credential interactively before enabling the Coordinator service:
+
+```powershell
+node packages/coordinator/dist/scripts/human-control.js <runtime.json> init
+```
+
+The command prompts for an explicit `yes`; the human credential is never printed.
+
 The generated configuration contains two service entries:
 
 - `task-service`, enabled by default;
