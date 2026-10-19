@@ -175,7 +175,8 @@ async function doctor(): Promise<void> {
     { name: 'node', ok: supportsRequiredNode(), detail: `${process.version} (requires >=24.19.0)` },
     { name: 'git', ok: commandExists('git'), detail: 'required for worktree validation' },
     { name: 'powershell', ok: process.platform !== 'win32' || commandExists('powershell'), detail: 'required for Windows Runtime' },
-    { name: 'windows-terminal', ok: process.platform !== 'win32' || commandExists('wt'), detail: 'required for Kitty mode' },
+    { name: 'kitty', ok: process.platform !== 'win32' || commandExists('kitty'), detail: 'required for Kitty mode' },
+    { name: 'windows-terminal', ok: true, detail: 'optional host; Kitty and Coordinator do not require wt.exe' },
     { name: 'task-service-source', ok: await access(join(root, 'packages', 'task-service', 'package.json')).then(() => true, () => false), detail: 'migrated package present' },
     { name: 'coordinator-source', ok: await access(join(root, 'packages', 'coordinator', 'package.json')).then(() => true, () => false), detail: 'migrated package present' }
   ];
