@@ -1,4 +1,5 @@
 import { spawn, type ChildProcess } from 'node:child_process';
+import { JobObjectHost } from './job-object-host.js';
 
 export interface ManagedProcess {
   readonly id: string;
@@ -12,6 +13,7 @@ export interface SpawnSpec {
   args?: string[];
   cwd: string;
   env?: NodeJS.ProcessEnv;
+  useJobObject?: boolean;
 }
 
 /**
@@ -21,6 +23,7 @@ export interface SpawnSpec {
  */
 export class WindowsProcessSupervisor {
   private readonly processes = new Map<string, ManagedProcess>();
+  private jobHost: JobObjectHost | undefined;
 
   start(spec: SpawnSpec): ManagedProcess {
     if (this.processes.has(spec.id)) throw new Error(`Process already exists: ${spec.id}`);
@@ -34,6 +37,13 @@ export class WindowsProcessSupervisor {
     if (!child.pid) throw new Error(`Process did not expose a PID: ${spec.id}`);
     const managed: ManagedProcess = { id: spec.id, pid: child.pid, child };
     this.processes.set(spec.id, managed);
+    if (spec.useJobObject && process.platform === 'win32') {
+      this.jobHost ??= new JobObjectHost();
+      void this.jobHost.assign(spec.id, child.pid).catch((error) => {
+        void this.stop(spec.id);
+        child.emit('error', error);
+      });
+    }
     const forget = () => { if (this.processes.get(spec.id)?.pid === child.pid) this.processes.delete(spec.id); };
     child.once('exit', forget);
     child.once('error', forget);
@@ -43,6 +53,9 @@ export class WindowsProcessSupervisor {
   async stop(id: string): Promise<void> {
     const managed = this.processes.get(id);
     if (!managed) return;
+    if (this.jobHost && process.platform === 'win32') {
+      await this.jobHost.terminate(id).catch(() => {});
+    }
     if (process.platform === 'win32') {
       await new Promise<void>((resolve, reject) => {
         const killer = spawn('taskkill', ['/PID', String(managed.pid), '/T', '/F'], { windowsHide: true });
@@ -57,6 +70,8 @@ export class WindowsProcessSupervisor {
 
   async stopAll(): Promise<void> {
     await Promise.all([...this.processes.keys()].map((id) => this.stop(id)));
+    await this.jobHost?.close();
+    this.jobHost = undefined;
   }
 
   get(id: string): ManagedProcess | undefined { return this.processes.get(id); }

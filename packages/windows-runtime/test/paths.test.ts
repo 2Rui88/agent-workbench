@@ -13,3 +13,9 @@ test('named pipe and localhost fallback are validated', () => {
   assert.deepEqual(localhostTcp(25430), { type: 'tcp', host: '127.0.0.1', port: 25430 });
   assert.throws(() => namedPipe('bad name'));
 });
+
+test('Job Object host is explicitly Windows-only', async () => {
+  if (process.platform === 'win32') return;
+  const { JobObjectHost } = await import('../src/job-object-host.js');
+  assert.throws(() => new JobObjectHost(), /only available on Windows/);
+});
