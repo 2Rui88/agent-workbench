@@ -1,8 +1,8 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { Toaster } from "@leke/components";
+import { Toaster } from "./ui.js";
 import { BoardAuthGate } from "./board-auth-gate.js";
-import "@leke/components/styles.css";
+import "./styles.css";
 import "./styles.css";
 
 // LeComponents switches themes via a `.dark` class on <html>, while our own

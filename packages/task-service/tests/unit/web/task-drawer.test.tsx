@@ -1,4 +1,3 @@
-import { createElement, type PropsWithChildren } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import type { TaskSummary } from "../../../src/storage/progress-store.js";
@@ -6,21 +5,6 @@ import {
   TaskDrawer,
   type TaskDrawerDetail
 } from "../../../src/web/task-drawer.js";
-
-vi.mock("@leke/components", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@leke/components")>();
-  const PortalWrapper = ({ children }: PropsWithChildren) => (
-    createElement("div", null, children)
-  );
-  return {
-    ...actual,
-    Modal: PortalWrapper,
-    ModalBody: PortalWrapper,
-    ModalContent: PortalWrapper,
-    ModalHeader: PortalWrapper,
-    ModalTitle: PortalWrapper
-  };
-});
 
 const task: TaskSummary = {
   task_id: "task-downstream",

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, Skeleton, Textarea as AppTextarea } from "@leke/components";
+import { Button, Skeleton, Textarea as AppTextarea } from "./ui.js";
 import {
   ApiError,
   BOARD_AUTH_REQUIRED_EVENT,

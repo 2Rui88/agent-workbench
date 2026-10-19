@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button } from "@leke/components";
+import { Button } from "./ui.js";
 import { copyText } from "./copy-text.js";
 
 type CopyState = "idle" | "copying" | "copied" | "failed";

@@ -5,7 +5,7 @@ import {
   useState,
   type KeyboardEvent
 } from "react";
-import { Badge, Button } from "@leke/components";
+import { Badge, Button } from "./ui.js";
 import type {
   DependencyValidationActivityItem,
   NotificationItem

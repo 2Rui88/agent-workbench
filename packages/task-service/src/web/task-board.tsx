@@ -18,7 +18,7 @@ import {
   StatusTag,
   toast,
   type Status
-} from "@leke/components";
+} from "./ui.js";
 import type { TaskSummary } from "../storage/progress-store.js";
 import {
   ApiError,

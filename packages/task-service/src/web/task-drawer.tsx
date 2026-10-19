@@ -20,7 +20,7 @@ import {
   SelectItem,
   SelectTrigger,
   toast
-} from "@leke/components";
+} from "./ui.js";
 import { statusHoldsLease } from "../core/task-state.js";
 import { formatRelativeTime, shortTaskId } from "./board-view-model.js";
 import { CopyIdButton } from "./copy-id-button.js";
