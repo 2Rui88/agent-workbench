@@ -22,7 +22,7 @@ export class CoordinatorOwnership {
       this.db.prepare('INSERT INTO coordinator_owners(group_id,instance_id,pid,socket_path) VALUES(?,?,?,?) ON CONFLICT(group_id) DO UPDATE SET instance_id=excluded.instance_id,pid=excluded.pid,socket_path=excluded.socket_path,socket_ino=NULL,socket_dev=NULL').run(this.groupId, this.instance, process.pid, socketPath);
       this.db.exec('COMMIT'); this.acquired = true;
     } catch (error) { this.db.exec('ROLLBACK'); throw error; }
-    if (previous?.socket_path !== socketPath) return;
+    if (process.platform === 'win32' || socketPath.startsWith('\\\\.\\pipe\\') || previous?.socket_path !== socketPath) return;
     try {
       const socket = await lstat(socketPath);
       if (!socket.isSocket() || socket.uid !== process.getuid?.() || socket.ino !== previous.socket_ino || socket.dev !== previous.socket_dev) throw new CoordinatorError('RECONCILIATION_REQUIRED', 'Existing socket does not match the dead coordinator resource.', 'Inspect endpoint ownership before removing anything.');
@@ -36,6 +36,7 @@ export class CoordinatorOwnership {
     }
   }
   async recordSocket(socketPath: string): Promise<void> {
+    if (process.platform === 'win32' || socketPath.startsWith('\\\\.\\pipe\\')) return;
     const socket = await lstat(socketPath);
     this.db.prepare('UPDATE coordinator_owners SET socket_ino=?,socket_dev=? WHERE group_id=? AND instance_id=?').run(socket.ino, socket.dev, this.groupId, this.instance);
   }
