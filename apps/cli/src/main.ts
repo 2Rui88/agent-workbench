@@ -1,12 +1,12 @@
 import { execFileSync, spawn } from 'node:child_process';
-import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { access, mkdir, open, readFile, writeFile } from 'node:fs/promises';
 import { constants } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 
-interface ServiceSpec { name: string; cwd: string; command: string; args: string[]; env?: Record<string, string>; }
-interface WorkbenchConfig { projectId: string; dataDir: string; gateway?: { host: string; port: number }; services?: ServiceSpec[]; repositories?: Array<{ id: string; path: string }>; }
+interface ServiceSpec { name: string; cwd: string; command: string; args: string[]; enabled?: boolean; env?: Record<string, string>; }
+interface WorkbenchConfig { projectId: string; dataDir: string; gateway?: { host: string; port: number }; coordinatorRuntimePath?: string; services?: ServiceSpec[]; repositories?: Array<{ id: string; path: string }>; }
 interface ServiceState { name: string; pid: number; command: string; startedAt: string; logPath: string; }
 interface StateFile { services: ServiceState[]; updatedAt: string; }
 
@@ -51,26 +51,43 @@ async function init(): Promise<void> {
   try { await access(path, constants.F_OK); throw new Error(`Config already exists: ${path}`); } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
   const config: WorkbenchConfig = {
     projectId: 'my-app',
-    dataDir: join(process.env.LOCALAPPDATA ?? join(homedir(), 'AppData', 'Local'), 'AgentWorkbench'),
+    dataDir: resolve(join(process.env.LOCALAPPDATA ?? join(homedir(), 'AppData', 'Local'), 'AgentWorkbench')),
     gateway: { host: '127.0.0.1', port: 47321 },
-    services: [],
+    coordinatorRuntimePath: resolve(join(process.env.LOCALAPPDATA ?? join(homedir(), 'AppData', 'Local'), 'AgentWorkbench', 'coordinator', 'runtime.json')),
+    services: [
+      {
+        name: 'task-service', cwd: root, command: process.execPath,
+        args: [resolve(root, 'packages/task-service/dist/server/main.js')], enabled: true,
+        env: { TASK_MCP_HOST: '127.0.0.1', TASK_MCP_PORT: '47321', TASK_MCP_DATA_DIR: resolve(join(process.env.LOCALAPPDATA ?? join(homedir(), 'AppData', 'Local'), 'AgentWorkbench', 'task-service')) }
+      },
+      {
+        name: 'coordinator', cwd: root, command: process.execPath,
+        args: [resolve(root, 'packages/coordinator/dist/scripts/daemon.js'), resolve(join(process.env.LOCALAPPDATA ?? join(homedir(), 'AppData', 'Local'), 'AgentWorkbench', 'coordinator', 'runtime.json'))], enabled: false
+      }
+    ],
     repositories: []
   };
   await writeFile(path, `${JSON.stringify(config, null, 2)}\n`, { encoding: 'utf8', flag: 'wx' });
   console.log(`Created ${path}`);
-  console.log('Add task-service and coordinator service entries before running agent-platform start.');
+  console.log('Task Service is enabled by default. Build it, then run: agent-platform start --service task-service');
+  console.log('Complete coordinator runtime initialization, set its enabled flag to true, then run: agent-platform start --service coordinator');
 }
 
 async function start(): Promise<void> {
   const config = await readConfig();
-  const services = config.services ?? [];
+  const selected = arg('--service');
+  const services = (config.services ?? []).filter((service) => selected ? service.name === selected : service.enabled !== false);
   if (!services.length) throw new Error('No services configured. Run init and add services to the config.');
   const { path, state } = await readState(config);
   const next: ServiceState[] = [...state.services.filter((service) => alive(service.pid))];
   for (const service of services) {
     if (next.some((running) => running.name === service.name)) continue;
+    await access(resolve(service.cwd));
+    const entrypoint = service.args[0];
+    if (service.command === process.execPath && entrypoint) await access(resolve(entrypoint));
+    if (service.name === 'coordinator' && entrypoint && service.args[1]) await access(resolve(service.args[1]));
     const logPath = join(resolve(config.dataDir), `${service.name}.log`);
-    const output = await import('node:fs/promises').then(({ open }) => open(logPath, 'a'));
+    const output = await open(logPath, 'a');
     const child = spawn(service.command, service.args, {
       cwd: resolve(service.cwd),
       env: { ...process.env, ...service.env },

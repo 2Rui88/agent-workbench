@@ -1,0 +1,52 @@
+# Unified Windows CLI
+
+The CLI owns local process lifecycle only. It does not bypass Task MCP task gates or
+Coordinator authorization.
+
+## Initialize
+
+```powershell
+node apps/cli/dist/main.js init
+```
+
+The generated configuration contains two service entries:
+
+- `task-service`, enabled by default;
+- `coordinator`, disabled until a valid coordinator runtime and human credential exist.
+
+Build the service packages before starting them:
+
+```powershell
+npm run build:task
+npm run build:coordinator
+npm run build:cli
+```
+
+## Start and inspect
+
+```powershell
+node apps/cli/dist/main.js start --service task-service
+node apps/cli/dist/main.js status
+```
+
+After `group-init` and human credential initialization, enable the coordinator service
+or select it explicitly:
+
+```powershell
+node apps/cli/dist/main.js start --service coordinator
+node apps/cli/dist/main.js status
+node apps/cli/dist/main.js stop
+```
+
+Each service gets a separate log under `dataDir`. The CLI records PIDs and only stops
+the processes it recorded, using `taskkill /T /F` on Windows.
+
+`doctor` checks the host prerequisites and the migrated package sources:
+
+```powershell
+node apps/cli/dist/main.js doctor
+```
+
+The coordinator uses a Windows Named Pipe internally even when the runtime config keeps
+the portable `socketPath` field. Task MCP continues to use its HTTP `/mcp` endpoint for
+Codex and Claude compatibility.

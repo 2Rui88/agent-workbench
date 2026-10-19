@@ -1,0 +1,31 @@
+{
+  "projectId": "my-app",
+  "dataDir": "C:\\Users\\User\\AppData\\Local\\AgentWorkbench",
+  "gateway": { "host": "127.0.0.1", "port": 47321 },
+  "coordinatorRuntimePath": "C:\\Users\\User\\AppData\\Local\\AgentWorkbench\\coordinator\\runtime.json",
+  "services": [
+    {
+      "name": "task-service",
+      "cwd": "C:\\Projects\\agent-workbench",
+      "command": "C:\\Program Files\\nodejs\\node.exe",
+      "args": ["C:\\Projects\\agent-workbench\\packages\\task-service\\dist\\server\\main.js"],
+      "enabled": true,
+      "env": {
+        "TASK_MCP_HOST": "127.0.0.1",
+        "TASK_MCP_PORT": "47321",
+        "TASK_MCP_DATA_DIR": "C:\\Users\\User\\AppData\\Local\\AgentWorkbench\\task-service"
+      }
+    },
+    {
+      "name": "coordinator",
+      "cwd": "C:\\Projects\\agent-workbench",
+      "command": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "C:\\Projects\\agent-workbench\\packages\\coordinator\\dist\\scripts\\daemon.js",
+        "C:\\Users\\User\\AppData\\Local\\AgentWorkbench\\coordinator\\runtime.json"
+      ],
+      "enabled": false
+    }
+  ],
+  "repositories": []
+}
