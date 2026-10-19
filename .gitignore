@@ -3,6 +3,7 @@ dist/
 coverage/
 .state/
 .cache/
+.tmp-cli/
 .env
 *.sqlite
 *.sqlite-shm

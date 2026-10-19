@@ -6,15 +6,16 @@
   "engines": { "node": ">=24.19.0" },
   "workspaces": ["apps/*", "packages/*"],
   "scripts": {
-    "build": "npm run build:runtime && npm run build:task && npm run build:coordinator",
+    "build": "npm run build:runtime && npm run build:task && npm run build:coordinator && npm run build:cli",
     "build:runtime": "npm --workspace packages/windows-runtime run build",
     "build:task": "npm --workspace packages/task-service run build",
     "build:coordinator": "npm --workspace packages/coordinator run build",
+    "build:cli": "npm --workspace apps/cli run build",
     "check:runtime": "npm --workspace packages/windows-runtime run check",
     "check:task": "npm --workspace packages/task-service run check",
     "check:coordinator": "npm --workspace packages/coordinator run typecheck",
     "check": "npm run check:runtime && npm run check:task && npm run check:coordinator",
-    "start": "node apps/gateway/dist/main.js",
+    "start": "node apps/cli/dist/main.js start",
     "status": "node apps/cli/dist/main.js status",
     "doctor": "node apps/cli/dist/main.js doctor"
   }
