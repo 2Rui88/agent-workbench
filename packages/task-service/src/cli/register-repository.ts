@@ -2,6 +2,7 @@
 
 import { execFileSync } from "node:child_process";
 import { realpathSync, statSync } from "node:fs";
+import { normalizeWorktreePath } from "../shared/worktree-path.js";
 import { createRuntimeConfig } from "../config/runtime-config.js";
 import { PlatformDomainError, assertProjectNotArchived } from "../core/task-service.js";
 import { SqliteDatabase } from "../storage/database.js";
@@ -72,7 +73,7 @@ function resolveRepositoryRoot(rawPath: string): string {
   } catch (error) {
     throw new Error(`Repository path is not a Git repository: ${path}`, { cause: error });
   }
-  if (toplevel !== path) {
+  if (normalizeWorktreePath(toplevel) !== normalizeWorktreePath(path)) {
     throw new Error(
       `Repository path is inside a Git repository but is not its root; register ${toplevel} instead`
     );

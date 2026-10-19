@@ -244,7 +244,7 @@ describe("RepoProbe", () => {
     createGitRepository(unregisteredPath);
     const unregisteredRoot = realpathSync(unregisteredPath);
     const escapeLink = join(fixture.workDir, "escape-link");
-    symlinkSync(unregisteredRoot, escapeLink);
+    symlinkSync(unregisteredRoot, escapeLink, process.platform === "win32" ? "junction" : "dir");
     mkdirSync(join(fixture.rootPath, "nested"));
     const probe = new RepoProbe();
 

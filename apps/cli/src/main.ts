@@ -56,7 +56,7 @@ async function init(): Promise<void> {
     coordinatorRuntimePath: resolve(join(process.env.LOCALAPPDATA ?? join(homedir(), 'AppData', 'Local'), 'AgentWorkbench', 'coordinator', 'runtime.json')),
     services: [
       {
-        name: 'task-service', cwd: root, command: process.execPath,
+        name: 'task-service', cwd: resolve(root, 'packages', 'task-service'), command: process.execPath,
         args: [resolve(root, 'packages/task-service/dist/server/main.js')], enabled: true,
         env: { TASK_MCP_HOST: '127.0.0.1', TASK_MCP_PORT: '47321', TASK_MCP_DATA_DIR: resolve(join(process.env.LOCALAPPDATA ?? join(homedir(), 'AppData', 'Local'), 'AgentWorkbench', 'task-service')) }
       },

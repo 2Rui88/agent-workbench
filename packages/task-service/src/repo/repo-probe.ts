@@ -2,6 +2,7 @@
 
 import { execFile } from "node:child_process";
 import { realpath } from "node:fs/promises";
+import { normalizeWorktreePath } from "../shared/worktree-path.js";
 import type { RepoSnapshot } from "../shared/task-contracts.js";
 import type { RepositoryRecord } from "../storage/progress-store.js";
 import { computeWorktreeContentDigest } from "./worktree-fingerprint.js";
@@ -135,7 +136,7 @@ export class RepoProbe {
       "locating the registered repository root",
       ["-C", rootPath, "rev-parse", "--show-toplevel"]
     )).trimEnd();
-    if (toplevel !== rootPath) {
+    if (normalizeWorktreePath(toplevel) !== normalizeWorktreePath(rootPath)) {
       throw new RepoProbeError(
         "REPOSITORY_NOT_ALLOWED",
         `Registered path ${rootPath} is not the repository root (${toplevel})`
@@ -144,7 +145,7 @@ export class RepoProbe {
 
     const worktreePath = await resolveRealPath(input.worktree_path);
     const allowedWorktrees = await this.#allowedWorktrees(rootPath);
-    if (!allowedWorktrees.has(worktreePath)) {
+    if (![...allowedWorktrees].some((allowed) => normalizeWorktreePath(allowed) === normalizeWorktreePath(worktreePath))) {
       throw new RepoProbeError(
         "REPOSITORY_NOT_ALLOWED",
         `Path ${worktreePath} is not a worktree of the registered repository ${rootPath}`
@@ -184,7 +185,7 @@ export class RepoProbe {
 
     return {
       repository_id: input.repository.repository_id,
-      repository_path: toplevel,
+      repository_path: rootPath,
       worktree_path: worktreePath,
       head_commit: headCommit,
       branch,
