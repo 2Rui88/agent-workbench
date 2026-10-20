@@ -80,3 +80,9 @@ npm --prefix packages/coordinator run windows-terminal:start -- <runtime.json>
 ```
 
 The backend opens one overview tab and four role tabs. Each tab runs the existing bounded observer renderer. It requires Windows Terminal to be installed and available as `wt.exe`; it does not require Linux, WSL, Kitty, or a Unix socket.
+
+Stop the observer tabs and their Herdr processes for the same runtime with:
+
+```powershell
+npm --prefix packages/coordinator run windows-terminal:stop -- <runtime.json>
+```
