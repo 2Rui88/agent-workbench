@@ -28,13 +28,14 @@ import type { ManagedRuntime, Runtime, RuntimeEvent } from './runtime/types.js';
 
 const roleSchema = roleEnum;
 export { bindingSchema } from './bindings.js';
+const recoveryBindingSchema = bindingSchema.extend({ expectedVersion: z.number().int().min(0) });
 export const workSchema = z.object({ id: z.string().min(1), roleId: roleSchema, goal: z.string().min(1), taskRef: z.string().min(1), repository: z.string().min(1), worktree: z.string().min(1), allowedPaths: z.array(z.string()).min(1), baseline: z.string().min(1), contractRef: z.string().min(1), contractRevision: z.string().min(1), acceptanceCriteria: z.array(z.string()).min(1), verificationCommands: z.array(z.string()).min(1), replacesDispatchId: z.string().min(1).optional(), dependencies: z.array(z.string()), risk: z.number().min(0).max(10), evidenceFailures: z.number().int().min(0), paused: z.boolean().default(false) }).strict();
 export const automationSchemas = {
   ...collaborationSchemas,
   ...browserSchemas,
   ...adviceSchemas,
   automation_submit_for_acceptance: z.object({binding:bindingSchema,dispatchIds:z.array(z.string().min(1)).min(1),validationId:z.string().min(1),contractRef:z.string().min(1),baselineRef:z.string().min(1),operationId:z.string().min(1)}).strict(),
-  automation_task_recover:z.object({binding:bindingSchema,operationId:z.string().min(1)}).strict(),
+  automation_task_recover:z.object({binding:recoveryBindingSchema,operationId:z.string().min(1)}).strict(),
   automation_task_checkpoint:z.object({binding:bindingSchema,operationId:z.string().min(1),checkpoint:z.record(z.string(),z.unknown())}).strict(),
   automation_task_operation_result:z.object({binding:bindingSchema,operationId:z.string().min(1)}).strict(),
   automation_lead_configure:z.object({binding:bindingSchema,work:workSchema.extend({roleId:z.literal('lead')}),operationId:z.string().min(1)}).strict(),

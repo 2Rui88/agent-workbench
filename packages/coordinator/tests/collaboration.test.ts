@@ -45,3 +45,12 @@ test('repository Task recovery and checkpoint are routed through lead-only durab
   await f.engine.execute(f.lead,'automation_task_checkpoint',checkpoint);await f.engine.execute(f.lead,'automation_task_checkpoint',checkpoint);assert.equal(checkpoints,1);
  }finally{await f.cleanup();}
 });
+
+test('repository Task recovery accepts a newly created backlog task at version zero', async () => {
+ const f = await engineFixture(); let recoveries = 0;
+ f.options.taskAuthority.recover = async (binding) => { recoveries++; return { id: binding.taskRef, owner: binding.owner, repositoryId: binding.repositoryId, worktreePath: binding.worktreePath, version: 1, status: 'in_progress', lease: { active: true, owner: binding.owner }, conflicts: [] }; };
+ try {
+  await f.engine.execute(f.lead, 'automation_task_recover', { binding: { ...f.dispatch.binding, expectedVersion: 0 }, operationId: 'recover-backlog-v0' });
+  assert.equal(recoveries, 1);
+ } finally { await f.cleanup(); }
+});
