@@ -75,7 +75,7 @@ const paneArgs = [
   ';', 'split-pane', '-V', '-s', '0.50', ...(launchArgsByRole.get('audit')!),
   ';', 'split-pane', '-V', '-s', '0.50', ...(launchArgsByRole.get('advisor')!),
 ];
-const child = spawn(windowsTerminal, paneArgs, { detached: true, stdio: 'ignore', windowsHide: true });
+const child = spawn(windowsTerminal, paneArgs, { detached: true, stdio: 'ignore', windowsHide: false });
 child.unref();
 const stopScript = join(launcherDir, 'stop.ps1');
 await writeFile(stopScript, `$ErrorActionPreference = 'Stop'\n$root = '${escapedLauncherDir}'\n$pidFiles = @(Get-ChildItem -LiteralPath $root -Filter '*.pid' -ErrorAction SilentlyContinue)\n$processIds = @($pidFiles | ForEach-Object { $value = (Get-Content -LiteralPath $_.FullName -Raw).Trim(); if ($value -match '^[0-9]+$') { [int]$value } })\n$processIds += @(Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'powershell.exe' -and $_.ProcessId -ne $PID -and $_.CommandLine -like ('*' + $root + '*') } | Select-Object -ExpandProperty ProcessId)\n$processIds = @($processIds | Sort-Object -Unique)\nif ($processIds.Count -eq 0) { throw 'No active Windows Terminal observer processes found.' }\nforeach ($processId in $processIds) { & taskkill.exe /PID $processId /T /F | Out-Null; if ($LASTEXITCODE -ne 0) { $global:LASTEXITCODE = 0 } }\nGet-ChildItem -LiteralPath $root -Filter '*.pid' -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue\n`, { encoding: 'utf8' });
