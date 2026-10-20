@@ -60,8 +60,10 @@ $env:PATH = "$nodeDir;$env:PATH"
 if (-not $SkipNpmInstall) {
     Push-Location $sourceRoot
     try {
-        & $npmCmd ci
-        if ($LASTEXITCODE -ne 0) { throw 'npm ci failed.' }
+        $npmInstallCommand = if (Test-Path (Join-Path $sourceRoot 'package-lock.json')) { 'ci' } else { 'install' }
+        Write-Host "Installing npm dependencies with npm $npmInstallCommand"
+        & $npmCmd $npmInstallCommand
+        if ($LASTEXITCODE -ne 0) { throw "npm $npmInstallCommand failed." }
     } finally { Pop-Location }
 }
 if (-not $SkipBuild) {
@@ -90,6 +92,7 @@ exit `$LASTEXITCODE
 Write-Host ''
 Write-Host 'Agent Workbench installation completed.'
 Write-Host "Launcher: $launcher"
-Write-Host "Start:    powershell -ExecutionPolicy Bypass -File `"$launcher`" start"
+Write-Host "Initialize: powershell -ExecutionPolicy Bypass -File `"$launcher`" init"
+Write-Host "Start:      powershell -ExecutionPolicy Bypass -File `"$launcher`" start"
 Write-Host "Status:   powershell -ExecutionPolicy Bypass -File `"$launcher`" status"
 Write-Host 'No model execution was performed by this installer.'
