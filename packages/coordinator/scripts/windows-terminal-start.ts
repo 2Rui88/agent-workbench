@@ -69,7 +69,7 @@ for (const role of roles) {
 // the Kitty operator workflow without requiring Kitty on Windows.
 const overview = launchArgsByRole.get('overview')!;
 const paneArgs = [
-  '-w', '0', 'new-tab', ...overview,
+  '-w', 'new', 'new-tab', ...overview,
   ';', 'split-pane', '-H', '-s', '0.65', ...(launchArgsByRole.get('frontend')!),
   ';', 'split-pane', '-V', '-s', '0.50', ...(launchArgsByRole.get('backend')!),
   ';', 'split-pane', '-V', '-s', '0.50', ...(launchArgsByRole.get('audit')!),
