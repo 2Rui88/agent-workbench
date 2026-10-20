@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import { access, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { constants } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -49,6 +49,13 @@ const launcherDir = join(stateDir, 'windows-terminal');
 await mkdir(launcherDir, { recursive: true });
 const watcher = resolve(coordinatorRoot, 'dist', 'scripts', 'herdr-watch.js');
 const roles = ['overview', 'frontend', 'backend', 'audit', 'advisor'] as const;
+const escapedLauncherDir = launcherDir.replace(/'/g, "''");
+const cleanupCommand = `$root='${escapedLauncherDir}'; Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'powershell.exe' -and $_.ProcessId -ne $PID -and $_.CommandLine -like ('*' + $root + '*') } | ForEach-Object { & taskkill.exe /PID $_.ProcessId /T /F | Out-Null }`;
+try {
+  execFileSync('powershell.exe', ['-NoLogo', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', cleanupCommand], { stdio: 'ignore', windowsHide: true });
+} catch {
+  // A previous observer session may not exist. Starting a fresh session remains valid.
+}
 const launchArgsByRole = new Map<string, string[]>();
 for (const role of roles) {
   const script = join(launcherDir, `${role}.ps1`);
@@ -71,7 +78,7 @@ const paneArgs = [
 const child = spawn(windowsTerminal, paneArgs, { detached: true, stdio: 'ignore', windowsHide: true });
 child.unref();
 const stopScript = join(launcherDir, 'stop.ps1');
-await writeFile(stopScript, `$ErrorActionPreference = 'Stop'\n$pidFiles = @(Get-ChildItem -LiteralPath '${launcherDir.replace(/'/g, "''")}' -Filter '*.pid' -ErrorAction SilentlyContinue)\nif ($pidFiles.Count -eq 0) { throw 'No active Windows Terminal observer processes found.' }\nforeach ($file in $pidFiles) {\n  $value = (Get-Content -LiteralPath $file.FullName -Raw).Trim()\n  if ($value -match '^[0-9]+$') { & taskkill.exe /PID $value /T /F | Out-Null }\n  Remove-Item -LiteralPath $file.FullName -Force -ErrorAction SilentlyContinue\n}\n`, { encoding: 'utf8' });
+await writeFile(stopScript, `$ErrorActionPreference = 'Stop'\n$root = '${escapedLauncherDir}'\n$pidFiles = @(Get-ChildItem -LiteralPath $root -Filter '*.pid' -ErrorAction SilentlyContinue)\n$processIds = @($pidFiles | ForEach-Object { $value = (Get-Content -LiteralPath $_.FullName -Raw).Trim(); if ($value -match '^[0-9]+$') { [int]$value } })\n$processIds += @(Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'powershell.exe' -and $_.ProcessId -ne $PID -and $_.CommandLine -like ('*' + $root + '*') } | Select-Object -ExpandProperty ProcessId)\n$processIds = @($processIds | Sort-Object -Unique)\nif ($processIds.Count -eq 0) { throw 'No active Windows Terminal observer processes found.' }\nforeach ($processId in $processIds) { & taskkill.exe /PID $processId /T /F | Out-Null; if ($LASTEXITCODE -ne 0) { $global:LASTEXITCODE = 0 } }\nGet-ChildItem -LiteralPath $root -Filter '*.pid' -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue\n`, { encoding: 'utf8' });
 console.log(JSON.stringify({
   status: 'opened',
   backend: 'windows-terminal-pane',

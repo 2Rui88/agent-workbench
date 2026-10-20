@@ -5,7 +5,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-if ($env:OS -ne 'Windows_NT') { throw 'Windows package generation must run on Windows.' }
+if (-not ($IsWindows -or [System.Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT)) { throw 'Windows package generation must run on Windows.' }
 $sourceRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $stage = Join-Path $env:TEMP "agent-workbench-package-$([guid]::NewGuid().ToString('N'))"
 $packageRoot = Join-Path $stage 'agent-workbench'

@@ -5,11 +5,13 @@ param(
     [string]$WindowsTerminalVersion = '1.25.2733.0',
     [switch]$SkipNodeDownload,
     [switch]$SkipWindowsTerminalDownload,
-    [switch]$SkipNpmInstall
+    [switch]$SkipNpmInstall,
+    [switch]$SkipBuild,
+    [switch]$SkipEnvironmentRegistration
 )
 
 $ErrorActionPreference = 'Stop'
-if ($env:OS -ne 'Windows_NT') {
+if (-not ($IsWindows -or [System.Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT)) {
     throw 'Agent Workbench Windows installer must run on Windows.'
 }
 
@@ -20,7 +22,7 @@ $nodeDir = Join-Path $runtimeRoot "node-v$NodeVersion-win-x64"
 $nodeExe = Join-Path $nodeDir 'node.exe'
 $npmCmd = Join-Path $nodeDir 'npm.cmd'
 $terminalDir = Join-Path $toolsRoot "WindowsTerminal-$WindowsTerminalVersion"
-$terminalExe = Join-Path $terminalDir 'terminal' "terminal-$WindowsTerminalVersion" 'wt.exe'
+$terminalExe = Join-Path $terminalDir "terminal-$WindowsTerminalVersion" 'wt.exe'
 
 New-Item -ItemType Directory -Force -Path $runtimeRoot, $toolsRoot | Out-Null
 
@@ -62,14 +64,18 @@ if (-not $SkipNpmInstall) {
         if ($LASTEXITCODE -ne 0) { throw 'npm ci failed.' }
     } finally { Pop-Location }
 }
-Push-Location $sourceRoot
-try {
-    & $npmCmd run build
-    if ($LASTEXITCODE -ne 0) { throw 'npm run build failed.' }
-} finally { Pop-Location }
+if (-not $SkipBuild) {
+    Push-Location $sourceRoot
+    try {
+        & $npmCmd run build
+        if ($LASTEXITCODE -ne 0) { throw 'npm run build failed.' }
+    } finally { Pop-Location }
+}
 
-[Environment]::SetEnvironmentVariable('AGENT_WORKBENCH_NODE', $nodeDir, 'User')
-[Environment]::SetEnvironmentVariable('AGENT_WORKBENCH_WINDOWS_TERMINAL', $terminalExe, 'User')
+if (-not $SkipEnvironmentRegistration) {
+    [Environment]::SetEnvironmentVariable('AGENT_WORKBENCH_NODE', $nodeDir, 'User')
+    [Environment]::SetEnvironmentVariable('AGENT_WORKBENCH_WINDOWS_TERMINAL', $terminalExe, 'User')
+}
 
 $launcher = Join-Path $InstallRoot 'agent-workbench.ps1'
 @"
