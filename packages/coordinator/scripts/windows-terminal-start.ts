@@ -48,15 +48,36 @@ const stateDir = dirname(resolve(runtime.databasePath));
 const launcherDir = join(stateDir, 'windows-terminal');
 await mkdir(launcherDir, { recursive: true });
 const watcher = resolve(coordinatorRoot, 'dist', 'scripts', 'herdr-watch.js');
-const roles = ['overview', 'frontend', 'backend', 'audit', 'advisor'];
+const roles = ['overview', 'frontend', 'backend', 'audit', 'advisor'] as const;
+const launchArgsByRole = new Map<string, string[]>();
 for (const role of roles) {
   const script = join(launcherDir, `${role}.ps1`);
   const pidFile = join(launcherDir, `${role}.pid`);
   await writeFile(script, `$ErrorActionPreference = 'Stop'\nSet-Content -LiteralPath '${pidFile.replace(/'/g, "''")}' -Value ([string]$PID) -Encoding ascii\ntry {\n  & node '${watcher.replace(/'/g, "''")}' '${resolve(runtime.databasePath).replace(/'/g, "''")}' '${runtime.groupId.replace(/'/g, "''")}' '${role}'\n} finally {\n  Remove-Item -LiteralPath '${pidFile.replace(/'/g, "''")}' -Force -ErrorAction SilentlyContinue\n}\n`, { encoding: 'utf8' });
   const title = role === 'overview' ? 'Coordinator overview' : `Coordinator ${role}`;
-  const child = spawn(windowsTerminal, ['-w', '0', 'new-tab', '--title', title, 'powershell.exe', '-NoLogo', '-NoExit', '-ExecutionPolicy', 'Bypass', '-File', script], { detached: true, stdio: 'ignore', windowsHide: true });
-  child.unref();
+  launchArgsByRole.set(role, ['--title', title, 'powershell.exe', '-NoLogo', '-NoExit', '-ExecutionPolicy', 'Bypass', '-File', script]);
 }
+// Keep the observer in one Windows Terminal tab and use panes. The overview is
+// the left pane; the four role panes are stacked on the right, which preserves
+// the Kitty operator workflow without requiring Kitty on Windows.
+const overview = launchArgsByRole.get('overview')!;
+const paneArgs = [
+  '-w', '0', 'new-tab', ...overview,
+  ';', 'split-pane', '-H', '-s', '0.65', ...(launchArgsByRole.get('frontend')!),
+  ';', 'split-pane', '-V', '-s', '0.50', ...(launchArgsByRole.get('backend')!),
+  ';', 'split-pane', '-V', '-s', '0.50', ...(launchArgsByRole.get('audit')!),
+  ';', 'split-pane', '-V', '-s', '0.50', ...(launchArgsByRole.get('advisor')!),
+];
+const child = spawn(windowsTerminal, paneArgs, { detached: true, stdio: 'ignore', windowsHide: true });
+child.unref();
 const stopScript = join(launcherDir, 'stop.ps1');
 await writeFile(stopScript, `$ErrorActionPreference = 'Stop'\n$pidFiles = @(Get-ChildItem -LiteralPath '${launcherDir.replace(/'/g, "''")}' -Filter '*.pid' -ErrorAction SilentlyContinue)\nif ($pidFiles.Count -eq 0) { throw 'No active Windows Terminal observer processes found.' }\nforeach ($file in $pidFiles) {\n  $value = (Get-Content -LiteralPath $file.FullName -Raw).Trim()\n  if ($value -match '^[0-9]+$') { & taskkill.exe /PID $value /T /F | Out-Null }\n  Remove-Item -LiteralPath $file.FullName -Force -ErrorAction SilentlyContinue\n}\n`, { encoding: 'utf8' });
-console.log(JSON.stringify({ status: 'opened', backend: 'windows-terminal', executable: windowsTerminal, groupId: runtime.groupId, roles, stopScript }));
+console.log(JSON.stringify({
+  status: 'opened',
+  backend: 'windows-terminal-pane',
+  layout: 'overview-left-roles-right',
+  executable: windowsTerminal,
+  groupId: runtime.groupId,
+  roles,
+  stopScript,
+}));
