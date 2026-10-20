@@ -18,5 +18,8 @@
     "start": "node apps/cli/dist/main.js start",
     "status": "node apps/cli/dist/main.js status",
     "doctor": "node apps/cli/dist/main.js doctor"
+    ,"windows:install": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/windows/install.ps1"
+    ,"windows:package": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/windows/package.ps1"
+    ,"windows:start": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/windows/start.ps1"
   }
 }
