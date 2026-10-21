@@ -22,7 +22,7 @@ $nodeDir = Join-Path $runtimeRoot "node-v$NodeVersion-win-x64"
 $nodeExe = Join-Path $nodeDir 'node.exe'
 $npmCmd = Join-Path $nodeDir 'npm.cmd'
 $terminalDir = Join-Path $toolsRoot "WindowsTerminal-$WindowsTerminalVersion"
-$terminalExe = Join-Path $terminalDir "terminal-$WindowsTerminalVersion" 'wt.exe'
+$terminalExe = Join-Path (Join-Path $terminalDir "terminal-$WindowsTerminalVersion") 'wt.exe'
 
 New-Item -ItemType Directory -Force -Path $runtimeRoot, $toolsRoot | Out-Null
 
