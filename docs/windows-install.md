@@ -30,7 +30,7 @@ ZIP 解压后仍需在解压目录执行 `scripts\windows\install.ps1`，由安�
 
 ## Windows Terminal 分屏
 
-`windows-terminal:start` 现在只创建一个 Windows Terminal 标签页，然后建立五个 pane：左侧为 Coordinator overview，右侧纵向排列 frontend、backend、audit、advisor。它保留 Dashboard、Herdr 和 Kitty 的职责分工，同时用 Windows Terminal pane 取代 Kitty pane。
+`windows-terminal:start` 现在只创建一个 Windows Terminal 标签页，然后建立五个 pane：上方一行为 Coordinator overview，下方一行横向均分为 frontend、backend、audit、advisor 四列。它保留 Dashboard、Herdr 和 Kitty 的职责分工，同时用 Windows Terminal pane 取代 Kitty pane。
 
 启动和停止：
 

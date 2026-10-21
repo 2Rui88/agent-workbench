@@ -79,8 +79,9 @@ Windows uses a native `wt.exe` observer backend instead of the Unix Kitty launch
 npm --prefix packages/coordinator run windows-terminal:start -- <runtime.json>
 ```
 
-The backend opens one Windows Terminal tab and five panes: the overview pane is on the
-left, while frontend, backend, audit, and advisor are stacked on the right. Each pane
+The backend opens one Windows Terminal tab and five panes in two rows: the overview
+pane is the top row, while frontend, backend, audit, and advisor share the bottom
+row in four equal columns. Each pane
 runs the existing bounded observer renderer. It requires Windows Terminal to be
 installed and available as `wt.exe`; it does not require Linux, WSL, Kitty, or a Unix
 socket.

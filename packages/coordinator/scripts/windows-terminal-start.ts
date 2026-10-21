@@ -65,14 +65,18 @@ for (const role of roles) {
   launchArgsByRole.set(role, ['--title', title, 'powershell.exe', '-NoLogo', '-NoExit', '-ExecutionPolicy', 'Bypass', '-File', script]);
 }
 // Keep the observer in one Windows Terminal tab and use panes. The overview is
-// the left pane; the four role panes are stacked on the right, which preserves
-// the Kitty operator workflow without requiring Kitty on Windows.
+// the top row of the tab; the four role panes share one row below it, which
+// preserves the Kitty operator workflow without requiring Kitty on Windows.
 const overview = launchArgsByRole.get('overview')!;
+// `-s` gives the fraction of the parent pane to the NEW pane, and each
+// split-pane focuses the pane it created: frontend opens below the overview
+// taking 65% of the height, then 3/4 + 2/3 of that + half of the rest line
+// backend, audit and advisor up beside it in four equal columns.
 const paneArgs = [
   '-w', 'new', 'new-tab', ...overview,
   ';', 'split-pane', '-H', '-s', '0.65', ...(launchArgsByRole.get('frontend')!),
-  ';', 'split-pane', '-V', '-s', '0.50', ...(launchArgsByRole.get('backend')!),
-  ';', 'split-pane', '-V', '-s', '0.50', ...(launchArgsByRole.get('audit')!),
+  ';', 'split-pane', '-V', '-s', '0.75', ...(launchArgsByRole.get('backend')!),
+  ';', 'split-pane', '-V', '-s', '0.6667', ...(launchArgsByRole.get('audit')!),
   ';', 'split-pane', '-V', '-s', '0.50', ...(launchArgsByRole.get('advisor')!),
 ];
 const child = spawn(windowsTerminal, paneArgs, { detached: true, stdio: 'ignore', windowsHide: false });
@@ -82,7 +86,7 @@ await writeFile(stopScript, `$ErrorActionPreference = 'Stop'\n$root = '${escaped
 console.log(JSON.stringify({
   status: 'opened',
   backend: 'windows-terminal-pane',
-  layout: 'overview-left-roles-right',
+  layout: 'overview-top-roles-row',
   executable: windowsTerminal,
   groupId: runtime.groupId,
   roles,
