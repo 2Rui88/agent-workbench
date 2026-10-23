@@ -29,15 +29,28 @@ export async function runningPid(dir: string, name: GroupProcess): Promise<numbe
   return Number.isSafeInteger(pid) && pid > 0 && alive(pid) ? pid : undefined;
 }
 async function commandLine(pid: number): Promise<string> {
+  if (process.platform === 'win32') {
+    // `ps` cannot see native Windows processes; CIM owns the authoritative command line.
+    try { return (await promisify(execFile)('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', `(Get-CimInstance Win32_Process -Filter 'ProcessId=${pid}').CommandLine`])).stdout.trim(); }
+    catch { return ''; }
+  }
   try { return (await promisify(execFile)('ps', ['-o', 'command=', '-p', String(pid)])).stdout; } catch { return ''; }
 }
+
+// Windows command lines may carry forward slashes (e.g. MSYS-converted arguments) and any
+// casing, so the marker containment check compares the normalized path forms there.
+const containsMarker = (command: string, marker: string): boolean => {
+  if (process.platform !== 'win32') return command.includes(marker);
+  const normalize = (value: string) => value.replaceAll('/', '\\').toLowerCase();
+  return normalize(command).includes(normalize(marker));
+};
 
 // Signals the recorded process only when its command line still carries the group marker (normally the runtime
 // path), so a recycled pid is never touched. A dead process just has its stale pid file removed.
 export async function stopRecorded(dir: string, name: GroupProcess, marker: string, waitMs = 10_000): Promise<'stopped' | 'absent' | 'mismatch' | 'timeout'> {
   const pid = await runningPid(dir, name);
   if (pid === undefined) { await removePid(dir, name); return 'absent'; }
-  if (!(await commandLine(pid)).includes(marker)) return 'mismatch';
+  if (!containsMarker(await commandLine(pid), marker)) return 'mismatch';
   process.kill(pid, 'SIGTERM');
   for (let waited = 0; waited < waitMs; waited += 100) {
     if (!alive(pid)) { await removePid(dir, name); return 'stopped'; }
