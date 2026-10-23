@@ -69,8 +69,8 @@ async function init(): Promise<void> {
   };
   await writeFile(path, `${JSON.stringify(config, null, 2)}\n`, { encoding: 'utf8', flag: 'wx' });
   console.log(`Created ${path}`);
-  console.log('Task Service is enabled by default. Build it, then run: agent-platform start --service task-service');
-  console.log('Complete coordinator runtime initialization, set its enabled flag to true, then run: agent-platform start --service coordinator');
+  console.log('Task Service is enabled by default. Build it, then run: agent-workbench start --service task-service');
+  console.log('Complete coordinator runtime initialization, set its enabled flag to true, then run: agent-workbench start --service coordinator');
 }
 
 async function initCoordinator(): Promise<void> {
@@ -193,7 +193,7 @@ try {
   else if (command === 'stop') await stop();
   else if (command === 'status') await status();
   else if (command === 'doctor') await doctor();
-  else console.log('Usage: agent-platform <init|init-coordinator|enable-coordinator|start|stop|status|doctor> [--config path]');
+  else console.log('Usage: agent-workbench <init|init-coordinator|enable-coordinator|start|stop|status|doctor> [--config path]');
 } catch (error) {
   console.error(error instanceof Error ? error.message : String(error));
   process.exitCode = 1;

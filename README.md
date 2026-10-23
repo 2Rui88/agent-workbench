@@ -31,5 +31,6 @@ The original projects are copied without flattening their module boundaries. See
 `docs/baseline/` and `docs/windows-runtime-migration.md` for the contract and migration
 rules.
 
-The original package checks remain available from each workspace. The task service
-still requires access to its configured private npm registry.
+The original package checks remain available from each workspace. All dependencies
+resolve from the public npm registry; the private `@leke` registry config from the
+pre-migration project has been removed.
